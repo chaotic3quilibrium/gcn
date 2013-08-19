@@ -23,6 +23,7 @@ object Implementations {
       else UnitToBaseAssociationEmpty
   }
   private final object UnitToBaseAssociationEmpty extends UnitToBaseAssociation {
+    final override def toString = "UnitToBaseAssociation(Empty)"
     final override val content = ListMap.empty[Unit, Base]
     final override val isInsertOrdered = false
     final override val kindShallow = Kind.Base
@@ -36,6 +37,7 @@ object Implementations {
     require(keys.canBeUnitToBaseAssociationKeySet, "keys.canBeUnitToBaseAssociationKeySet must be true")
     require(!values.isEmpty, "values must not be empty")
     require(keys.content.length == values.content.length, "keys.content.length [" + keys.content.length + "] must be equal to values.content.length [" + values.content.length + "]")
+    final override def toString = "UnitToBaseAssociation(" + isInsertOrdered + "," + kindShallow + "," + content + ")"
     final override val content = keys.content.map(_.asInstanceOf[Unit]).zip(values.content).toMap
     final override val isInsertOrdered = keySetIsInsertOrdered
     final override val kindShallow = values.kindShallow
@@ -58,6 +60,7 @@ object Implementations {
       else BaseGroupEmpty
   }
   private final object BaseGroupEmpty extends BaseGroup {
+    final override def toString = "BaseGroup(Empty)"
     final override val content = Seq.empty[Base]
     final override val isInsertOrdered = false
     final override val kindShallow = Kind.Base
@@ -70,6 +73,7 @@ object Implementations {
   }
   private final class BaseGroupImpl(values: Seq[Base], valuesIsInsertOrdered: Boolean) extends BaseGroup {
     require(!values.isEmpty, "values must not be empty")
+    final override def toString = "BaseGroup(" + isInsertOrdered + "," + kindShallow + "," + content + ")"
     final override val content = values;
     final override val isInsertOrdered = valuesIsInsertOrdered
     final override val kindShallow = if (isImpureShallow) Kind.Base else values.head.kind
@@ -88,6 +92,7 @@ object Implementations {
   }
 
   abstract class UnitImpl(rawValue: String) extends Unit {
+    final override def toString = "Unit(" + concreteType + "," + content + ")"
     final override val content = rawValue
     final override val isEmpty = rawValue.length() == 0
     final override lazy val toBaseGroup: BaseGroup = BaseGroup.createWithSeq(List(this))
@@ -95,8 +100,33 @@ object Implementations {
   final class UnitString(rawValue: String) extends UnitImpl(rawValue) {
     final override val concreteType = UnitType.String
   }
+  private class UnitBoolean(val rawValue: Boolean) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.Boolean
+  }
+  private class UnitTrinary(val rawValue: Trinary.Value) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.Boolean
+  }
+  private class UnitIdentifier(val rawValue: String) extends UnitImpl(rawValue) {
+    require(rawValue.matches("""[A-Za-z_][A-Za-z_0-9]*"""), "rawValue [" + rawValue+ "] must start with an instance of {letter, underscore} and then be followed by 0 to n instances of {letter, number, underscore}")
+    final override val concreteType = UnitType.IdentifierUsa
+  }
   private class UnitIntegerSigned32(val rawValue: Int) extends UnitImpl(rawValue.toString) {
     final override val concreteType = UnitType.IntegerSigned32
   }
-  //TODO: fill in the remaining UnitTypes implementations; Boolean, Trinary, Identifier, etc. 
+  private class UnitIntegerSigned64(val rawValue: Long) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.IntegerSigned64
+  }
+  private class UnitIntegerBig(val rawValue: BigInt) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.IntegerSignedNBit
+  }
+  private class UnitDecimal32(val rawValue: Float) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.Decimal32
+  }
+  private class UnitDecimal64(val rawValue: Double) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.Decimal64
+  }
+  private class UnitDecimalBig(val rawValue: BigDecimal) extends UnitImpl(rawValue.toString) {
+    final override val concreteType = UnitType.DecimalNBit
+  }
+  //TODO: fill in the remaining UnitTypes implementations; DateTimeInMillis, DateTimeString, Currency32, etc. 
 }
