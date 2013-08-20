@@ -1,5 +1,6 @@
 package com.creative_logic.gcn
 
+import scala.collection.immutable.ListMap
 import scala.util.matching.Regex
 
 //import com.github.nscala_time.time.Imports._ //from https://github.com/nscala-time/nscala-time
@@ -43,7 +44,11 @@ object Interfaces {
   trait UnitToBaseAssociation extends Base {
     final override def canEqual(other: Any) = other.isInstanceOf[UnitToBaseAssociation]
     final override val kind = Kind.UnitToBaseAssociation //defaults to behave like an immutable Java HashMap<Unit, Base>
-    override def content: Map[Unit, Base]                //if isInsertOrdered is true, instance will be of ListMap
+    override def content: (BaseGroup, BaseGroup)         //parallel base groups of the same length
+    final lazy val asMap: Map[Unit, Base] = {            //convenience access
+      val tuple2s = content._1.content.map(_.asInstanceOf[Unit]).zip(content._2.content.map(_.asInstanceOf[Base]))
+      ListMap() ++ tuple2s //retains insertion order, even if it's not relevant
+    }
   }
 
   trait BaseGroup extends Base {                         //defaults to behave like an immutable Java HashSet<Base>, but implemented like immutable HashMap<Unit.Integer32, Base> where Integer is ranged 0..(size - 1)
